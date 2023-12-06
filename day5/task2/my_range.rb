@@ -1,19 +1,19 @@
 class MyRange
   include Comparable
 
-  attr_reader :start, :size
+  attr_reader :start, :last, :size
 
   def initialize(start, length)
     @start = start
     @size = length
-    @range = (start..(start + length - 1))
+    @last = start + length - 1
   end
 
   def &(other)
-    return nil if range.end < other.range.begin || range.begin > other.range.end
+    return nil if last < other.start || start > other.last
 
-    start = [range.begin, other.range.begin].max
-    length = [range.end, other.range.end].min - start + 1
+    start = [@start, other.start].max
+    length = [last, other.last].min - start + 1
     MyRange.new(start, length)
   end
 
@@ -22,14 +22,17 @@ class MyRange
     return [self] if intersection.nil?
 
     result = []
-    result << MyRange.new(range.begin, intersection.range.begin - range.begin) if range.begin < intersection.range.begin
-    result << MyRange.new(intersection.range.end + 1, range.end - intersection.range.end) if range.end > intersection.range.end
+    result << MyRange.new(start, intersection.start - start) if start < intersection.start
+    result << MyRange.new(intersection.last + 1, last - intersection.last) if last > intersection.last
     result
   end
 
   def <=>(other)
-    other_range = other.is_a?(MyRange) ? other.range : other
-    range.begin <=> other_range.begin && range.end <=> other_range.end
+    start <=> other.begin && last <=> other.last
+  end
+
+  def begin
+    @start
   end
 
   protected
